@@ -151,7 +151,7 @@ func (c *PluginConfig) Validate() error {
 // TrackedFileInfo holds information about a tracked file and its attestation
 type TrackedFileInfo struct {
 	Path              string           `json:"path"`
-	Content           []byte           `json:"content"`
+	Content           string           `json:"content"`
 	Exists            bool             `json:"exists"`
 	SHA               string           `json:"sha,omitempty"`    // SHA-256
 	SHA512            string           `json:"sha512,omitempty"` // SHA-512
@@ -539,7 +539,7 @@ func (l *FileAttestationPlugin) GatherTrackedFileAttestations(ctx context.Contex
 
 	fileInfo := &TrackedFileInfo{
 		Path:              l.config.FilePath,
-		Content:           nil,
+		Content:           "",
 		Exists:            false,
 		Attestation:       nil,
 		AuthorizedSigners: l.parsedConfig.AuthorizedSigners,
@@ -556,7 +556,7 @@ func (l *FileAttestationPlugin) GatherTrackedFileAttestations(ctx context.Contex
 		return fileInfo, nil
 	}
 	fileInfo.Exists = exists
-	fileInfo.Content = fileContent
+	fileInfo.Content = string(fileContent)
 	// Compute SHA256 digest of the file content for policy evaluation.
 	sum := sha256.Sum256(fileContent)
 	fileInfo.SHA = hex.EncodeToString(sum[:])

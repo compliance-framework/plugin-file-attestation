@@ -1,4 +1,4 @@
-module github.com/compliance-framework/plugin-files-attestation
+module github.com/compliance-framework/plugin-file-attestation
 
 go 1.25.4
 
