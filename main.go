@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
@@ -38,6 +39,8 @@ type PluginConfig struct {
 	BasicAuthUsername string `mapstructure:"basic_auth_username"`
 	BasicAuthPassword string `mapstructure:"basic_auth_password"`
 	BearerToken       string `mapstructure:"bearer_token"`
+	// Hack to configure policy labels and generate correct evidence UUIDs
+	PolicyLabels string `mapstructure:"policy_labels"`
 }
 
 // FileSignerRule defines a file path and its authorized signers for attestation verification
@@ -53,9 +56,10 @@ type ParsedConfig struct {
 	AttestationPath   string   `mapstructure:"attestation_path"`
 	AuthorizedSigners []string `mapstructure:"authorized_signers"`
 	// Authentication for URI-like sources
-	BasicAuthUsername string `mapstructure:"basic_auth_username"`
-	BasicAuthPassword string `mapstructure:"basic_auth_password"`
-	BearerToken       string `mapstructure:"bearer_token"`
+	BasicAuthUsername string            `mapstructure:"basic_auth_username"`
+	BasicAuthPassword string            `mapstructure:"basic_auth_password"`
+	BearerToken       string            `mapstructure:"bearer_token"`
+	PolicyLabels      map[string]string `mapstructure:"policy_labels"`
 }
 
 func parseFilePath(filePath string) (string, error) {
@@ -73,6 +77,13 @@ func parseFilePath(filePath string) (string, error) {
 // comma-separated list of authorized signers into a slice.
 func (c *PluginConfig) Parse() (*ParsedConfig, error) {
 	var err error
+	policyLabels := map[string]string{}
+	if c.PolicyLabels != "" {
+		err = json.Unmarshal([]byte(c.PolicyLabels), &policyLabels)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse policy labels: %w", err)
+		}
+	}
 	c.FilePath, err = parseFilePath(c.FilePath)
 	if err != nil {
 		return nil, fmt.Errorf("invalid file path: %w", err)
@@ -88,6 +99,7 @@ func (c *PluginConfig) Parse() (*ParsedConfig, error) {
 		BasicAuthUsername: c.BasicAuthUsername,
 		BasicAuthPassword: c.BasicAuthPassword,
 		BearerToken:       c.BearerToken,
+		PolicyLabels:      policyLabels,
 	}
 
 	if c.AuthorizedSigners != "" {
@@ -717,15 +729,15 @@ func (l *FileAttestationPlugin) EvaluatePolicies(ctx context.Context, data *Trac
 			Identifier: "common-components/attestation-host",
 		},
 	}
-
+	labels := map[string]string{}
+	maps.Copy(labels, l.parsedConfig.PolicyLabels)
+	labels["provider"] = "file"
+	labels["type"] = "attestation"
+	labels["file"] = data.Path
 	for _, policyPath := range req.GetPolicyPaths() {
 		processor := policyManager.NewPolicyProcessor(
 			l.Logger,
-			map[string]string{
-				"provider": "file",
-				"type":     "attestation",
-				"file":     data.Path,
-			},
+			labels,
 			subjects,
 			components,
 			inventory,

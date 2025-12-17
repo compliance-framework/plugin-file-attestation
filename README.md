@@ -9,6 +9,7 @@ Typical use cases:
 - Ensure a critical artifact (e.g. SBOM, manifest, binary) is present.
 - Verify that the artifact is covered by a signed Sigstore-style attestation.
 - Enforce that the signer of an attestation is on an approved list.
+- Ensure a given standard-based report is compliant (SARIF, CTRF)
 
 This plugin is intended to be run as part of an aggregate agent and will execute
 your policy suite for the configured file and its attestation.
