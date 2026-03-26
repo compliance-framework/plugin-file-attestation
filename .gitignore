@@ -4,3 +4,4 @@ dist/
 plugin
 .env
 .envrc
+.config

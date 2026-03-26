@@ -52,10 +52,10 @@ plugins:
     #   - Relative path (treated as local filesystem)
     #   - file:///absolute/path
     #   - http(s)://... or oci://...
-    path: "file:///etc/myapp/config.yaml"
+    file_path: "file:///etc/myapp/config.yaml"
 
     # Optional: path to the attestation associated with the file.
-    # Same URI formats as `path`.
+    # Same URI formats as `file_path`.
     attestation_path: "https://attest.example.com/config.yaml.att.json"
 
     # Optional: comma-separated list of authorized signers for the attestation.
@@ -71,16 +71,49 @@ plugins:
 
 ### Path rules
 
-- `path` is **required**.
-- `path` and `attestation_path` may be:
+- `file_path` is **required**.
+- `file_path` and `attestation_path` may be:
   - Relative filesystem paths (no URI scheme).
   - `file://` URIs (local filesystem).
   - `http://`, `https://`, or `oci://` URIs.
 - Any other schemes (including `git://`) are rejected during validation.
 
-The plugin also normalizes plain filesystem paths to `file://` internally so
-they can be handled consistently.
+Absolute filesystem paths are normalized to `file://` internally. Relative
+filesystem paths are kept as relative paths.
 
+### Subject labeling
+
+When the plugin emits evidence, it labels tracked files differently depending on
+where the file is sourced from:
+
+- Local filesystem paths and `file://` URIs are labeled with:
+  - `provider=file`
+  - `type=attestation`
+  - `source=local`
+  - `host=<current host>`
+  - `file=<absolute local file path>`
+- Remote `http://`, `https://`, and `oci://` targets are labeled with:
+  - `provider=file`
+  - `type=attestation`
+  - `source=remote`
+  - `host=<remote domain>`
+  - `file=<remote path excluding the domain>`
+
+This allows the framework to resolve separate subject templates for:
+
+- Local host-backed files
+- Remote files and artifacts
+
+### HTTP example
+
+Example agent configuration using an HTTP-hosted file:
+
+```yaml
+plugins:
+  file_attestation:
+    file_path: "https://raw.githubusercontent.com/compliance-framework/plugin-local-ssh/main/README.md"
+    authorized_signers: ""
+```
 ---
 
 ## Integration testing

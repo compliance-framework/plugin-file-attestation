@@ -18,11 +18,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install gooci cli
-        run: go install github.com/compliance-framework/gooci@latest
+        run: go install github.com/compliance-framework/gooci@v0.0.7
       - name: Authenticate gooci cli
         run: gooci login ghcr.io --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}
       - name: gooci Upload Version
-        run: gooci upload dist/ ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{github.ref_name}}
+        run: gooci upload dist/ ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{github.ref_name}} --annotate="org.ccf.plugin.protocol.version=2"
       - name: gooci Upload Latest
         if: "!github.event.release.prerelease"
-        run: gooci upload dist/ ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
+        run: gooci upload dist/ ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest --annotate="org.ccf.plugin.protocol.version=2"
