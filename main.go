@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -62,15 +63,90 @@ type ParsedConfig struct {
 	PolicyLabels      map[string]string `mapstructure:"policy_labels"`
 }
 
+type trackedPathLabels struct {
+	Source string
+	Host   string
+	File   string
+}
+
 func parseFilePath(filePath string) (string, error) {
 	parsed, err := url.Parse(filePath)
 	if err != nil {
 		return "", fmt.Errorf("invalid file path: %w", err)
 	}
 	if parsed.Scheme == "" {
+		if !filepath.IsAbs(filePath) {
+			return filePath, nil
+		}
 		return "file://" + filePath, nil
 	}
 	return filePath, nil
+}
+
+func resolveTrackedPathLabels(path string, localHost string) trackedPathLabels {
+	parsed, err := url.Parse(path)
+	if err != nil {
+		return trackedPathLabels{
+			Source: "unknown",
+			Host:   localHost,
+			File:   path,
+		}
+	}
+
+	switch parsed.Scheme {
+	case "", "file":
+		fileLabel := path
+		if parsed.Scheme == "file" && parsed.Path != "" {
+			fileLabel = parsed.Path
+		}
+		if !filepath.IsAbs(fileLabel) {
+			if absPath, err := filepath.Abs(fileLabel); err == nil {
+				fileLabel = absPath
+			}
+		}
+		return trackedPathLabels{
+			Source: "local",
+			Host:   localHost,
+			File:   fileLabel,
+		}
+	default:
+		fileLabel := strings.TrimPrefix(parsed.EscapedPath(), "/")
+		if fileLabel == "" {
+			fileLabel = strings.TrimPrefix(parsed.Path, "/")
+		}
+		return trackedPathLabels{
+			Source: "remote",
+			Host:   parsed.Hostname(),
+			File:   fileLabel,
+		}
+	}
+}
+
+func currentHostname() string {
+	hostname, err := os.Hostname()
+	if err == nil && hostname != "" {
+		return hostname
+	}
+
+	if envHostname := strings.TrimSpace(os.Getenv("HOSTNAME")); envHostname != "" {
+		return envHostname
+	}
+
+	return "unknown-host"
+}
+
+func buildEvidenceLabels(filePath string, policyLabels map[string]string, localHost string) map[string]string {
+	labels := map[string]string{}
+	maps.Copy(labels, policyLabels)
+
+	pathLabels := resolveTrackedPathLabels(filePath, localHost)
+	labels["provider"] = "file"
+	labels["type"] = "attestation"
+	labels["file"] = pathLabels.File
+	labels["source"] = pathLabels.Source
+	labels["host"] = pathLabels.Host
+
+	return labels
 }
 
 // Parse converts the flat PluginConfig into a ParsedConfig, expanding the
@@ -202,6 +278,49 @@ func (l *FileAttestationPlugin) Configure(req *proto.ConfigureRequest) (*proto.C
 	l.parsedConfig = parsed
 
 	return &proto.ConfigureResponse{}, nil
+}
+
+func (l *FileAttestationPlugin) Init(req *proto.InitRequest, apiHelper runner.ApiHelper) (*proto.InitResponse, error) {
+	ctx := context.Background()
+
+	subjectTemplates := []*proto.SubjectTemplate{
+		{
+			Name:                "Tracked Local Host File Attestation",
+			Type:                proto.SubjectType_SUBJECT_TYPE_COMPONENT,
+			TitleTemplate:       "Tracked local file attestation target: '{{.file}}' on host '{{.host}}'",
+			DescriptionTemplate: "Tracked local file '{{.file}}' on host '{{.host}}' and its associated attestation evidence",
+			PurposeTemplate:     "Represents a host-backed local file artifact being monitored for existence, attestation availability, signer authorization, and digest integrity",
+			IdentityLabelKeys:   []string{"host", "file", "_plugin"},
+			SelectorLabels: []*proto.SubjectLabelSelector{
+				{Key: "source", Value: "local"},
+			},
+			LabelSchema: []*proto.SubjectLabelSchema{
+				{Key: "host", Description: "The hostname where the tracked local file resides"},
+				{Key: "file", Description: "The tracked local file path evaluated by the plugin"},
+				{Key: "source", Description: "The source classification for the tracked file"},
+				{Key: "_plugin", Description: "The plugin identifier"},
+			},
+		},
+		{
+			Name:                "Tracked Remote File Attestation",
+			Type:                proto.SubjectType_SUBJECT_TYPE_COMPONENT,
+			TitleTemplate:       "Tracked remote file attestation target: '{{.file}}' from host '{{.host}}'",
+			DescriptionTemplate: "Tracked remote file or artifact '{{.file}}' from host '{{.host}}' and its associated attestation evidence",
+			PurposeTemplate:     "Represents a remote file artifact being monitored for existence, attestation availability, signer authorization, and digest integrity",
+			IdentityLabelKeys:   []string{"host", "file", "_plugin"},
+			SelectorLabels: []*proto.SubjectLabelSelector{
+				{Key: "source", Value: "remote"},
+			},
+			LabelSchema: []*proto.SubjectLabelSchema{
+				{Key: "host", Description: "The domain hosting the tracked remote file"},
+				{Key: "file", Description: "The tracked remote file path excluding the domain"},
+				{Key: "source", Description: "The source classification for the tracked file"},
+				{Key: "_plugin", Description: "The plugin identifier"},
+			},
+		},
+	}
+
+	return runner.InitWithSubjectsAndRisksFromPolicies(ctx, l.Logger, req, apiHelper, subjectTemplates)
 }
 
 func (l *FileAttestationPlugin) Eval(req *proto.EvalRequest, apiHelper runner.ApiHelper) (*proto.EvalResponse, error) {
@@ -729,11 +848,7 @@ func (l *FileAttestationPlugin) EvaluatePolicies(ctx context.Context, data *Trac
 			Identifier: "common-components/attestation-host",
 		},
 	}
-	labels := map[string]string{}
-	maps.Copy(labels, l.parsedConfig.PolicyLabels)
-	labels["provider"] = "file"
-	labels["type"] = "attestation"
-	labels["file"] = data.Path
+	labels := buildEvidenceLabels(data.Path, l.parsedConfig.PolicyLabels, currentHostname())
 	for _, policyPath := range req.GetPolicyPaths() {
 		processor := policyManager.NewPolicyProcessor(
 			l.Logger,
@@ -768,7 +883,7 @@ func main() {
 	goplugin.Serve(&goplugin.ServeConfig{
 		HandshakeConfig: runner.HandshakeConfig,
 		Plugins: map[string]goplugin.Plugin{
-			"runner": &runner.RunnerGRPCPlugin{
+			"runner": &runner.RunnerV2GRPCPlugin{
 				Impl: fileAtt,
 			},
 		},
