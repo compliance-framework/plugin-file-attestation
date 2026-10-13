@@ -1,0 +1,5 @@
+lisa-design:
+- Policy data: store req.GetPolicyData().AsMap() in Configure (nil when unset, cleared on reconfigure) and pass it to NewPolicyProcessor, matching plugin-github-settings/plugin-aws-acm. Rejected passing nil: the agent sends policy_data in ConfigureRequest since v0.7.0 and nil would silently drop it.
+- The spec named policy_manager.New; this plugin only calls NewPolicyProcessor, which gained the same policyData parameter in v0.7.0.
+- go directive 1.25.8 -> 1.26.1 because agent v0.9.1's own go.mod requires go 1.26.1 (go get raised it).
+- google.golang.org/protobuf becomes a direct requirement only because the new test builds a structpb.Struct.
