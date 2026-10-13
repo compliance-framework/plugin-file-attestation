@@ -252,6 +252,7 @@ type FileAttestationPlugin struct {
 
 	config       *PluginConfig
 	parsedConfig *ParsedConfig
+	policyData   map[string]interface{}
 }
 
 func (l *FileAttestationPlugin) Configure(req *proto.ConfigureRequest) (*proto.ConfigureResponse, error) {
@@ -276,6 +277,12 @@ func (l *FileAttestationPlugin) Configure(req *proto.ConfigureRequest) (*proto.C
 		return nil, err
 	}
 	l.parsedConfig = parsed
+
+	if policyData := req.GetPolicyData(); policyData != nil {
+		l.policyData = policyData.AsMap()
+	} else {
+		l.policyData = nil
+	}
 
 	return &proto.ConfigureResponse{}, nil
 }
@@ -858,6 +865,7 @@ func (l *FileAttestationPlugin) EvaluatePolicies(ctx context.Context, data *Trac
 			inventory,
 			actors,
 			activities,
+			l.policyData,
 		)
 		evidence, err := processor.GenerateResults(ctx, policyPath, data)
 		evidences = slices.Concat(evidences, evidence)
