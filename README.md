@@ -167,6 +167,20 @@ You can use these fields to write policies such as:
 - Deny when the attestation is missing or invalid.
 - Deny when the signer is not one of the `authorized_signers`.
 
+### Policy data
+
+Any `policy_data` set on this plugin's block in the agent configuration is passed
+to every policy evaluation and is available to Rego as `data.<key>`:
+
+```yaml
+plugins:
+  file_attestation:
+    # ...plugin settings as above...
+    policy_data:
+      allowed_issuers:
+        - https://token.actions.githubusercontent.com
+```
+
 ---
 
 ## Releases
