@@ -3,3 +3,9 @@ lisa-design:
 - The spec named policy_manager.New; this plugin only calls NewPolicyProcessor, which gained the same policyData parameter in v0.7.0.
 - go directive 1.25.8 -> 1.26.1 because agent v0.9.1's own go.mod requires go 1.26.1 (go get raised it).
 - google.golang.org/protobuf becomes a direct requirement only because the new test builds a structpb.Struct.
+
+lisa-selfreview:
+pass 1 (strict): 1 finding.
+- CORE-DOC-001 [should-fix] README.md Policies: the plugin now passes the agent's policy_data to policies (data.<key>) but the README does not say so. Fix: short "Policy data" subsection.
+- Verified: go build, go test, go test -race, gofmt -l (empty), go vet, goreleaser build --snapshot --single-target all pass. goreleaser check fails only on the pre-existing deprecated archives.format (old CI does not run it; handled in the shared-CI layer).
+- Deferred (pre-existing, out of scope): README config examples put settings directly under plugins.file_attestation instead of under config:.
