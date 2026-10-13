@@ -185,8 +185,8 @@ plugins:
 
 ## Releases
 
-This plugin is released using GoReleaser to build binaries, and GOOCI to upload artifacts to OCI,
-which will ensure a binary is built for most OS and Architecture combinations.
+Releases come from release-please PRs: merging one tags the release, and the release workflow publishes it.
+Release candidates (`vX.Y.Z-rcN`) come from the `cut-prerelease` workflow.
 
 You can find the binaries on each release of this plugin in the GitHub Releases page.
 
