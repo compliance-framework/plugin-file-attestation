@@ -1,2 +1,5 @@
 lisa-addressed:
 CORE-STYLE-001 10c92f35ee4f: dropped '(W1-S1)' from the three caller header comments.
+
+lisa-selfreview:
+pass 2: approve, no findings (full diff re-read; actionlint clean; go build/test pass; goreleaser check + snapshot pass).
