@@ -3,3 +3,6 @@ lisa-design:
 - Callers are copies of mock-plugin-1 (release-please, release, preview) and mock-plugin-policies-1 (cut-prerelease), pins moved to workflows v1.5.2 (6e7fc9c); preview keeps on-main: false; release passes protocol-version "2".
 - .goreleaser.yaml now equals mock-plugin-1's: release.prerelease auto (required by release-go-plugin.yml) plus replace_existing_artifacts true (the shared job warns without it). Builds/archives unchanged.
 - README: only the paragraph describing how releases are produced was replaced; the "where to find binaries/OCI" lines stay.
+
+lisa-selfreview:
+pass 1: approve-with-nit. CORE-STYLE-001 (nit, 10c92f35ee4f): release-please.yml, release.yml and preview.yml header comments kept the mock's "(W1-S1)" suffix. Fixing: drop the suffix. No other rule matched (top-level permissions set on every caller; no checkout steps; release workflows deliberately have no cancel-in-progress).
