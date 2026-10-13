@@ -1,0 +1,5 @@
+lisa-design:
+- Manifest seeded at 0.2.0: releases/latest is v0.2.0 (final, vX.Y.Z) and its commit d802c72 is an ancestor of main, so no bootstrap-sha.
+- Callers are copies of mock-plugin-1 (release-please, release, preview) and mock-plugin-policies-1 (cut-prerelease), pins moved to workflows v1.5.2 (6e7fc9c); preview keeps on-main: false; release passes protocol-version "2".
+- .goreleaser.yaml now equals mock-plugin-1's: release.prerelease auto (required by release-go-plugin.yml) plus replace_existing_artifacts true (the shared job warns without it). Builds/archives unchanged.
+- README: only the paragraph describing how releases are produced was replaced; the "where to find binaries/OCI" lines stay.
