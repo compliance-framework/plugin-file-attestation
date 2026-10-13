@@ -3,6 +3,10 @@ package main
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/compliance-framework/agent/runner/proto"
+	"github.com/hashicorp/go-hclog"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestResolveTrackedPathLabels(t *testing.T) {
@@ -105,5 +109,32 @@ func TestBuildEvidenceLabelsForRemotePath(t *testing.T) {
 	}
 	if labels["file"] != "path/to/config.yaml" {
 		t.Fatalf("unexpected file label: %q", labels["file"])
+	}
+}
+
+func TestConfigureStoresPolicyData(t *testing.T) {
+	policyData, err := structpb.NewStruct(map[string]interface{}{
+		"allowed_signers": []interface{}{"alice@example.com"},
+	})
+	if err != nil {
+		t.Fatalf("build policy data: %v", err)
+	}
+
+	plugin := &FileAttestationPlugin{Logger: hclog.NewNullLogger()}
+	config := map[string]string{"file_path": "configs/app.yaml"}
+
+	if _, err := plugin.Configure(&proto.ConfigureRequest{Config: config, PolicyData: policyData}); err != nil {
+		t.Fatalf("configure: %v", err)
+	}
+	signers, ok := plugin.policyData["allowed_signers"].([]interface{})
+	if !ok || len(signers) != 1 || signers[0] != "alice@example.com" {
+		t.Fatalf("unexpected policy data: %#v", plugin.policyData)
+	}
+
+	if _, err := plugin.Configure(&proto.ConfigureRequest{Config: config}); err != nil {
+		t.Fatalf("reconfigure: %v", err)
+	}
+	if plugin.policyData != nil {
+		t.Fatalf("expected policy data to be cleared, got %#v", plugin.policyData)
 	}
 }
