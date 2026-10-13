@@ -2,3 +2,7 @@ lisa-design:
 - ci.yml is mock-plugin-1's caller copied verbatim minus its "Trial of the shared plugin CI" header line; pins workflows v1.5.1 (7b55019ed36050a57eb8273f6a67fd4b2395adb0).
 - .goreleaser.yaml: archives format: tar.gz -> formats: [tar.gz] (same output; removes the deprecation warning goreleaser check raises). release.yml and build-and-upload.yml untouched (W3 replaces them).
 - Only push.yml called test.yml; nothing else referenced either file, so both are deleted.
+
+lisa-selfreview:
+pass 1 (strict): approve, no findings. Checked: ci.yml matches mock-plugin-1 except the dropped header line; reusable workflows SHA-pinned; nothing else referenced push.yml/test.yml; release.yml and build-and-upload.yml unchanged; goreleaser formats key supported by the release workflow's goreleaser ~> v2.
+Local run of the shared checks (Go 1.26.1, GOWORK=off): gofmt -l empty; go mod tidy no diff; go test and go test -race pass; golangci-lint v2.11.4 with the workflows v1.5.1 shared .golangci.yml: 0 issues (new vs layer-1 base, new vs main, and whole repo); goreleaser check rc=0; goreleaser build --snapshot --clean --single-target ok; actionlint v1.7.12 clean.
