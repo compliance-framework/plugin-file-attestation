@@ -1,0 +1,4 @@
+lisa-design:
+- ci.yml is mock-plugin-1's caller copied verbatim minus its "Trial of the shared plugin CI" header line; pins workflows v1.5.1 (7b55019ed36050a57eb8273f6a67fd4b2395adb0).
+- .goreleaser.yaml: archives format: tar.gz -> formats: [tar.gz] (same output; removes the deprecation warning goreleaser check raises). release.yml and build-and-upload.yml untouched (W3 replaces them).
+- Only push.yml called test.yml; nothing else referenced either file, so both are deleted.
