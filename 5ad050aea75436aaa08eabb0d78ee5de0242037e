@@ -1,0 +1,2 @@
+lisa-addressed:
+- CORE-DOC-001 README.md: added "Policy data" subsection describing agent policy_data reaching Rego as data.<key> (self-review pass 1).
