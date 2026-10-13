@@ -1,4 +1,4 @@
-# Opens/updates the release PR and, once it merges, tags and publishes the release (W1-S1).
+# Opens/updates the release PR and, once it merges, tags and publishes the release.
 name: release-please
 
 on:

@@ -1,4 +1,4 @@
-# Publishes :pr-<number> previews for PRs labelled `preview` (no :main previews for plugins) (W1-S1).
+# Publishes :pr-<number> previews for PRs labelled `preview` (no :main previews for plugins).
 name: preview
 
 on:

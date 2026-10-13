@@ -1,4 +1,4 @@
-# Publishes the plugin (goreleaser archives + gooci upload) when a release is published (W1-S1).
+# Publishes the plugin (goreleaser archives + gooci upload) when a release is published.
 name: release
 
 on:
