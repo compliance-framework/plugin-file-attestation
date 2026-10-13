@@ -1,2 +1,5 @@
 lisa-addressed:
 - CORE-DOC-001 README.md: added "Policy data" subsection describing agent policy_data reaching Rego as data.<key> (self-review pass 1).
+
+lisa-selfreview:
+pass 2 (strict): approve, no findings. Re-ran go test -race and gofmt -l after the README commit.
