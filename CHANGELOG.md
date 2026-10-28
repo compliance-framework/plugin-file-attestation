@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.2](https://github.com/compliance-framework/plugin-file-attestation/compare/v0.2.1...v0.2.2) (2026-10-28)
+
+
+### Bug Fixes
+
+* **deps:** bump agent to v0.9.3, workflows to v1.7.0 ([#19](https://github.com/compliance-framework/plugin-file-attestation/issues/19)) ([6a32296](https://github.com/compliance-framework/plugin-file-attestation/commit/6a32296d95110680c50bfa33f1ef3fc63c30efa7))
+* **deps:** bump agent to v0.9.4 ([#23](https://github.com/compliance-framework/plugin-file-attestation/issues/23)) ([84fbb31](https://github.com/compliance-framework/plugin-file-attestation/commit/84fbb311ed90bc948e73bb5e8838ccc03c3e4420))
+* **deps:** update all non-major dependencies ([#21](https://github.com/compliance-framework/plugin-file-attestation/issues/21)) ([3bd3f39](https://github.com/compliance-framework/plugin-file-attestation/commit/3bd3f39349cfb31ab324c6db5b1ceca1cfb3ed0f))
+* **deps:** update module golang.org/x/net to v0.62.0 [security] ([#22](https://github.com/compliance-framework/plugin-file-attestation/issues/22)) ([4d5ec77](https://github.com/compliance-framework/plugin-file-attestation/commit/4d5ec77f72e599741061dbdb5726fe5ef795239f))
+
 ## [0.2.1](https://github.com/compliance-framework/plugin-file-attestation/compare/v0.2.0...v0.2.1) (2026-10-14)
 
 
