@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/compliance-framework/plugin-file-attestation/compare/v0.2.2...v0.2.3) (2026-10-30)
+
+
+### Bug Fixes
+
+* **deps:** build with the go1.26.10 toolchain so Renovate can ship Go security fixes ([#24](https://github.com/compliance-framework/plugin-file-attestation/issues/24)) ([c0a99a6](https://github.com/compliance-framework/plugin-file-attestation/commit/c0a99a66b2f96c7a7f84cc6b27e1ed70023ee616))
+
 ## [0.2.2](https://github.com/compliance-framework/plugin-file-attestation/compare/v0.2.1...v0.2.2) (2026-10-28)
 
 
