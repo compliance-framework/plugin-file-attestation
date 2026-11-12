@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/compliance-framework/plugin-file-attestation/compare/v0.2.3...v0.2.4) (2026-11-12)
+
+
+### Bug Fixes
+
+* **deps:** update security fixes (gomod) [security] ([#29](https://github.com/compliance-framework/plugin-file-attestation/issues/29)) ([1e3dba1](https://github.com/compliance-framework/plugin-file-attestation/commit/1e3dba190ecad439d149e658c7fb0abc8aee96e3))
+
 ## [0.2.3](https://github.com/compliance-framework/plugin-file-attestation/compare/v0.2.2...v0.2.3) (2026-11-02)
 
 
